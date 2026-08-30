@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shinka Store</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    body { background: #0a0a0a; color: #fff; font-family: 'Poppins', sans-serif; }
+  .glow { box-shadow: 0 0 20px rgba(168,85,247,.3) }
+  .tab-active { border-bottom: 2px solid #a855f7; color: #a855f7 }
+  .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold }
+  .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50 }
+</style>
+</head>
+<body class="p-4">
+
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">🛒 Shinka Store</h1>
+
+    <div class="flex gap-4 border-b border-zinc-800 mb-6 overflow-x-auto">
+        <button onclick="showTab('store')" class="tab-btn tab-active pb-2">Store</button>
+        <button onclick="showTab('admin')" class="tab-btn pb-2">Admin</button>
+        <button onclick="showTab('cek')" class="tab-btn pb-2">Cek</button>
+        <button onclick="showTab('cart')" class="tab-btn pb-2">Keranjang <span id="cartCount" class="bg-purple-600 px-2 rounded-full text-xs">0</span></button>
+        <button onclick="showTab('bayar')" class="tab-btn pb-2">Bayar</button>
+    </div>
+
+    <!-- TAB ADMIN -->
+    <div id="tab-admin" class="hidden">
+        <div class="flex gap-2 mb-4">
+            <input id="apiKey" type="password" placeholder="API Key" class="flex-1 p-3 rounded-lg bg-zinc-900 border-zinc-800">
+            <button onclick="loginAdmin()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-bold">Login</button>
+        </div>
+        <button onclick="showAddProdukModal()" class="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg font-bold mb-4">➕ Tambah Produk Baru</button>
+        <div id="admin-content"></div>
+    </div>
+
+    <!-- TAB STORE -->
+    <div id="tab-store">
+        <input id="search" onkeyup="renderProduk()" placeholder="🔍 Cari produk..." class="w-full p-3 rounded-lg bg-zinc-900 mb-4">
+        <div id="produk-list" class="grid md:grid-cols-3 gap-4"></div>
+    </div>
+
+    <!-- TAB CEK -->
+    <div id="tab-cek" class="hidden">
+        <h2 class="text-xl font-bold mb-2">🔍 Cek Pembayaran</h2>
+        <input id="cekOrder" placeholder="ID Order" class="w-full p-3 rounded-lg bg-zinc-900 mb-4">
+        <button onclick="cekMutasi()" class="w-full bg-purple-600 p-3 rounded-lg font-bold">CEK</button>
+        <div id="cek-hasil" class="mt-4"></div>
+    </div>
+
+    <!-- TAB CART -->
+    <div id="tab-cart" class="hidden">
+        <div id="cart-list"></div>
+        <input id="buyerName" placeholder="Nama WA" class="w-full p-2 my-2 bg-zinc-900 rounded">
+        <button onclick="checkout()" class="w-full bg-green-600 p-3 rounded-lg mt-2 font-bold">Checkout</button>
+    </div>
+
+    <!-- TAB BAYAR - CUMA ADA QRIS + EWALLET -->
+    <div id="tab-bayar" class="hidden">
+        <h2 class="text-xl font-bold mb-4">💳 Metode Pembayaran</h2>
+        <div class="bg-zinc-900 p-4 rounded-lg mb-4 text-center">
+            <p class="font-bold mb-2">SCAN QRIS CATBOOX</p>
+            <img id="qrisImg" src="" class="w-64 mx-auto rounded-lg glow mb-2">
+            <p class="text-xs text-zinc-400">Scan pake DANA/GOPAY/OVO/ShopeePay</p>
+        </div>
+        <div id="payment-list" class="bg-zinc-900 p-4 rounded-lg mb-4"></div>
+        <div class="bg-zinc-900 p-4 rounded-lg">
+            <h3 class="font-bold mb-2">Konfirmasi Pembayaran</h3>
+            <input id="bayarOrderId" placeholder="ID Order dari Checkout" class="w-full p-2 mb-2 bg-zinc-800 rounded">
+            <input id="bayarBukti" type="file" accept="image/*" class="w-full p-2 mb-2 bg-zinc-800 rounded text-sm">
+            <button onclick="kirimBukti()" class="w-full bg-green-600 p-2 rounded font-bold">KIRIM BUKTI</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDIT -->
+<div id="modalEdit" class="modal hidden">
+    <div class="bg-zinc-900 p-6 rounded-lg w-full max-w-2xl">
+        <h2 class="text-xl font-bold mb-4">✏️ Edit Produk</h2>
+        <div id="modal-body"></div>
+        <div class="flex gap-2 mt-4">
+            <button onclick="saveEdit()" class="flex-1 bg-green-600 p-2 rounded font-bold">Simpan</button>
+            <button onclick="closeModal()" class="flex-1 bg-red-600 p-2 rounded font-bold">Batal</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL STOK -->
+<div id="modalStok" class="modal hidden">
+    <div class="bg-zinc-900 p-6 rounded-lg w-full max-w-lg">
+        <h2 class="text-xl font-bold mb-4">➕ Tambah Stok</h2>
+        <div id="modal-stok-body"></div>
+        <div class="flex gap-2 mt-4">
+            <button onclick="saveStok()" class="flex-1 bg-blue-600 p-2 rounded font-bold">Tambah</button>
+            <button onclick="closeModal()" class="flex-1 bg-red-600 p-2 rounded font-bold">Batal</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// =================== CONFIG ===================
+const API_URL = 'https://api-shinka.vercel.app' // GANTI LINK VERCEL KAMU
+const API_KEY = 'shinkajier321'
+const IMG_BB_KEY = 'f81079add3b2cb8ca63da3c8570cac6b' // daftar di imgbb.com
+
+const PAYMENT = {
+    qris: 'https://files.catbox.moe/ztndoi.png', // LINK QR CATBOOX
+    ewallet: [
+        { nama: 'DANA', no: '083876684930' },
+        { nama: 'GOPAY', no: '083876684930' },
+        { nama: 'OVO', no: '083876684930' }
+    ]
+}
+// ==============================================
+
+let allProduk = []
+let cart = []
+let editingProduct = null
+let stokTarget = {}
+
+// SET QR DAN PAYMENT SAAT LOAD - UDAH HAPUS BANK
+document.getElementById('qrisImg').src = PAYMENT.qris
+document.getElementById('payment-list').innerHTML =
+    PAYMENT.ewallet.map(e => `<p>${e.nama}: <b>${e.no}</b></p>`).join('')
+
+// FUNGSI GANTI TAB
+function showTab(tab) {
+    document.querySelectorAll('[id^=tab-]').forEach(e => e.classList.add('hidden'))
+    document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('tab-active'))
+    document.getElementById('tab-' + tab).classList.remove('hidden')
+    event.target.classList.add('tab-active')
+    if (tab === 'cart') renderCart()
+}
+
+// BADGE STATUS
+function getStatusBadge(status) {
+    if (status === 'PAID') return `<span class="badge bg-green-600">PAID</span>`
+    if (status === 'UNPAID') return `<span class="badge bg-red-600">UNPAID</span>`
+    return `<span class="badge bg-zinc-600">${status}</span>`
+}
+
+// LOAD PRODUK DARI API
+async function loadProduk() {
+    let res = await fetch(API_URL + '/produk')
+    let json = await res.json()
+    allProduk = json.data || []
+    renderProduk()
+}
+
+// RENDER PRODUK KE STORE
+function renderProduk() {
+    let search = document.getElementById('search').value.toLowerCase()
+    let list = allProduk.filter(p => p.name.toLowerCase().includes(search))
+    let html = ''
+    for (let p of list) {
+        html += `<div class="bg-zinc-900 p-4 rounded-lg border-zinc-800">`
+        html += `<p class="font-bold text-lg">${p.name}</p>`
+        html += `<p class="text-sm text-zinc-400 mb-2">${p.category}</p>`
+        for (let i = 0; i < p.variants.length; i++) {
+            let v = p.variants[i]
+            html += `<div class="flex justify-between items-center mb-2">`
+            html += `<span>${v.name} - Rp${v.price.toLocaleString()}</span>`
+            html += `<button onclick="addCart('${p.id}',${i})" class="bg-purple-600 px-3 py-1 rounded text-sm">+</button>`
+            html += `</div>`
+        }
+        html += `</div>`
+    }
+    document.getElementById('produk-list').innerHTML = html
+}
+
+// LOGIN ADMIN
+async function loginAdmin() {
+    let key = document.getElementById('apiKey').value
+    if (key!== API_KEY) return alert('API Key salah')
+    let res = await fetch(API_URL + '/orders', { headers: { 'x-api-key': key } })
+    let json = await res.json()
+
+    let html = `<h2 class="font-bold mb-3">Daftar Produk</h2>`
+    for (let p of allProduk) {
+        html += `<div class="bg-zinc-900 p-4 rounded-lg mb-3 border-zinc-800">`
+        html += `<div class="flex justify-between">`
+        html += `<p class="font-bold">${p.name}</p>`
+        html += `<div class="flex gap-2">`
+        html += `<button onclick="openEditModal('${p.id}')" class="bg-yellow-600 px-3 py-1 rounded text-sm font-bold">✏️ Edit</button>`
+        html += `<button onclick="openStokModal('${p.id}')" class="bg-blue-600 px-3 py-1 rounded text-sm font-bold">➕ Stok</button>`
+        html += `</div></div>`
+        for (let v of p.variants) {
+            let stok = p.type === 'dynamic'? v.stocks.length : v.stock
+            html += `<p class="text-sm">${v.name} - Rp${v.price.toLocaleString()} | Stok: ${stok}</p>`
+        }
+        html += `</div>`
+    }
+
+    html += `<h2 class="font-bold mt-6 mb-3">Daftar Order</h2>`
+    for (let o of json.data) {
+        html += `<div class="bg-zinc-900 p-3 rounded mb-2">`
+        html += `${o.orderId} ${getStatusBadge(o.status)}<br>`
+        html += `Rp${o.total.toLocaleString()}<br>`
+        if (o.paymentProof) html += `<a href="${o.paymentProof}" target="_blank" class="text-blue-400">Lihat Bukti</a>`
+        html += `</div>`
+    }
+    document.getElementById('admin-content').innerHTML = html
+}
+
+// MODAL EDIT PRODUK
+function openEditModal(pid) {
+    editingProduct = allProduk.find(p => p.id === pid)
+    document.getElementById('modal-body').innerHTML = `
+        <input id="editName" value="${editingProduct.name}" class="w-full p-2 mb-2 bg-zinc-800 rounded">
+        <input id="editCategory" value="${editingProduct.category}" class="w-full p-2 mb-2 bg-zinc-800 rounded">
+        <textarea id="editVariants" class="w-full h-40 p-2 bg-zinc-800 rounded">${JSON.stringify(editingProduct.variants, null, 2)}</textarea>
+    `
+    document.getElementById('modalEdit').classList.remove('hidden')
+}
+
+// SIMPAN EDIT
+async function saveEdit() {
+    let key = document.getElementById('apiKey').value
+    let data = {
+        id: editingProduct.id,
+        name: document.getElementById('editName').value,
+        category: document.getElementById('editCategory').value,
+        type: editingProduct.type,
+        variants: JSON.parse(document.getElementById('editVariants').value)
+    }
+    await fetch(API_URL + '/addproduk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+        body: JSON.stringify(data)
+    })
+    alert('Produk diupdate')
+    closeModal()
+    loadProduk()
+    loginAdmin()
+}
+
+// MODAL TAMBAH STOK
+function openStokModal(pid) {
+    let p = allProduk.find(x => x.id === pid)
+    stokTarget = { pid, p }
+    let html = ''
+    for (let i = 0; i < p.variants.length; i++) {
+        let v = p.variants[i]
+        let stok = p.type === 'dynamic'? v.stocks.length : v.stock
+        html += `<div class="mb-3">`
+        html += `<p class="font-bold">${v.name}</p>`
+        html += `<p class="text-xs">Stok: ${stok}</p>`
+        if (p.type === 'dynamic') {
+            html += `<textarea id="stok-input-${i}" placeholder="Paste kode, pisah enter" class="w-full h-20 p-2 bg-zinc-800 rounded mt-1"></textarea>`
+        } else {
+            html += `<input id="stok-input-${i}" type="number" placeholder="Jumlah stok" class="w-full p-2 bg-zinc-800 rounded mt-1">`
+        }
+        html += `</div>`
+    }
+    document.getElementById('modal-stok-body').innerHTML = html
+    document.getElementById('modalStok').classList.remove('hidden')
+}
+
+// SIMPAN STOK
+async function saveStok() {
+    let key = document.getElementById('apiKey').value
+    for (let i = 0; i < stokTarget.p.variants.length; i++) {
+        let val = document.getElementById(`stok-input-${i}`).value
+        if (!val) continue
+        await fetch(API_URL + '/editstok', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+            body: JSON.stringify({ productId: stokTarget.pid, variantIndex: i, tambahStok: val })
+        })
+    }
+    alert('Stok ditambah')
+    closeModal()
+    loadProduk()
+    loginAdmin()
+}
+
+// TUTUP MODAL
+function closeModal() {
+    document.getElementById('modalEdit').classList.add('hidden')
+    document.getElementById('modalStok').classList.add('hidden')
+}
+
+// MODAL TAMBAH PRODUK BARU
+function showAddProdukModal() {
+    editingProduct = null
+    document.getElementById('modal-body').innerHTML = `
+        <input id="editName" placeholder="Nama Produk" class="w-full p-2 mb-2 bg-zinc-800 rounded">
+        <input id="editCategory" placeholder="Kategori" class="w-full p-2 mb-2 bg-zinc-800 rounded">
+        <textarea id="editVariants" placeholder='[{"name":"10k","price":10000,"stock":100}]' class="w-full h-40 p-2 bg-zinc-800 rounded"></textarea>
+    `
+    document.getElementById('modalEdit').classList.remove('hidden')
+}
+
+// TAMBAH KE KERANJANG
+function addCart(pid, vid) {
+    let p = allProduk.find(x => x.id === pid)
+    let v = p.variants[vid]
+    cart.push({ pid, vid, pname: p.name, name: v.name, price: v.price, qty: 1 })
+    document.getElementById('cartCount').innerText = cart.length
+    alert('Ditambah ke keranjang')
+}
+
+// RENDER KERANJANG
+function renderCart() {
+    let html = ''
+    for (let c of cart) {
+        html += `<div class="bg-zinc-900 p-2 rounded mb-2 flex justify-between">${c.pname} - ${c.name} Rp${c.price.toLocaleString()}</div>`
+    }
+    document.getElementById('cart-list').innerHTML = html
+}
+
+// CHECKOUT
+async function checkout() {
+    let name = document.getElementById('buyerName').value
+    if (!name || cart.length === 0) return alert('Isi nama & keranjang')
+    let res = await fetch(API_URL + '/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart, buyer: name })
+    })
+    let json = await res.json()
+    alert(`Order Dibuat! ID: ${json.orderId}\nTotal: Rp${json.total.toLocaleString()}\nSilahkan ke tab Bayar`)
+    cart = []
+    document.getElementById('cartCount').innerText = 0
+    renderCart()
+}
+
+// CEK MUTASI
+async function cekMutasi() {
+    let id = document.getElementById('cekOrder').value
+    let res = await fetch(API_URL + '/cek/' + id)
+    let json = await res.json()
+    if (json.success) {
+        document.getElementById('cek-hasil').innerHTML = `Status: ${getStatusBadge(json.data.status)}<br>Total: Rp${json.data.total.toLocaleString()}`
+    } else {
+        document.getElementById('cek-hasil').innerHTML = 'Order tidak ditemukan'
+    }
+}
+
+// KIRIM BUKTI
+async function kirimBukti() {
+    let orderId = document.getElementById('bayarOrderId').value
+    let file = document.getElementById('bayarBukti').files[0]
+    if (!orderId ||!file) return alert('Isi ID Order dan Upload Bukti')
+
+    let form = new FormData()
+    form.append('image', file)
+    let upload = await fetch('https://api.imgbb.com/1/upload?key=' + IMG_BB_KEY, { method: 'POST', body: form })
+    let json = await upload.json()
+
+    await fetch(API_URL + '/bayar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, buktiUrl: json.data.url })
+    })
+    alert('Bukti terkirim! Menunggu admin konfirmasi')
+}
+
+loadProduk()
+</script>
+</body>
+</html>
