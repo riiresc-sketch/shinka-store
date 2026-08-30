@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Admin - Shinka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="card w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center mb-2 glow-text">Admin Login</h1>
+        <p class="text-center text-[var(--text-muted)] mb-6">Masukkan Key untuk lanjut</p>
+        
+        <input id="apiKeyInput" type="password" placeholder="Masukkan Key" class="mb-4">
+        <button onclick="login()" class="btn btn-primary w-full">Login</button>
+        <p id="error" class="text-red-400 text-sm mt-3 text-center"></p>
+    </div>
+
+<script>
+const API_KEY = 'shinkajier321' // HARUS SAMA DENGAN DI APP.JS
+function login() {
+    let key = document.getElementById('apiKeyInput').value
+    if(key === API_KEY){
+        localStorage.setItem('admin_key', key)
+        window.location.href = 'admin.html'
+    } else {
+        document.getElementById('error').innerText = 'API Key salah'
+    }
+}
+</script>
+</body>
+</html>

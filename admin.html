@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Shinka Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <header class="navbar sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold glow-text">Shinka<span>Admin</span></h1>
+            <nav class="flex gap-2">
+                <a href="index.html" class="btn btn-ghost">Store</a>
+                <a href="admin.html" class="btn nav-active">Admin</a>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 grid md:grid-cols-3 gap-6">
+        <div class="md:col-span-1">
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4 glow-text" id="form-title">Tambah Produk</h2>
+                <input id="prodName" placeholder="Nama Produk" class="mb-3">
+                <input id="prodCategory" placeholder="Kategori" class="mb-3">
+                <textarea id="prodDesc" placeholder="Deskripsi" rows="3" class="mb-3"></textarea>
+                <textarea id="prodVariants" placeholder='Contoh: [{"name":"1B","price":5000},{"name":"3B","price":12000}]' rows="4" class="mb-3"></textarea>
+                <button onclick="saveProduk()" class="btn btn-primary w-full">Simpan</button>
+                <button onclick="resetForm()" class="btn btn-ghost w-full mt-2">Reset</button>
+            </div>
+        </div>
+
+        <div class="md:col-span-2">
+            <div class="card">
+                <h2 class="text-xl font-bold mb-4 glow-text">Daftar Produk</h2>
+                <div id="admin-produk-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </main>
+
+<script src="assets/app.js"></script>
+<script>
+// CEK LOGIN DULU
+const API_KEY = 'shinkajier321' // GANTI SESUAI API KAMU
+const ADMIN_KEY = localStorage.getItem('admin_key')
+if(!ADMIN_KEY || ADMIN_KEY!== API_KEY){
+    alert('Silahkan login dulu')
+    window.location.href = 'login.html'
+}
+
+let editingId = null
+let allAdminProducts = [] // simpan data biar edit gak error
+
+function logout() {
+    localStorage.removeItem('admin_key')
+    window.location.href = 'login.html'
+}
+
+async function loadAdminProduk() {
+    let json = await apiFetch('/produk')
+    allAdminProducts = json.data || []
+
+    if(allAdminProducts.length === 0) {
+        document.getElementById('admin-produk-list').innerHTML = '<p class="text-[var(--text-muted)] text-center">Belum ada produk</p>'
+        return
+    }
+
+    let html = allAdminProducts.map((p, index) => `
+        <div class="card!p-4 flex justify-between items-center">
+            <div>
+                <p class="font-bold">${p.name}</p>
+                <p class="text-xs text-[var(--text-muted)]">${p.category} - ${p.variants.length} varian</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick='editProduk(${index})' class="btn btn-ghost!py-1!px-3">Edit</button>
+                <button onclick="deleteProduk('${p.id}')" class="btn btn-danger!py-1!px-3">Hapus</button>
+            </div>
+        </div>
+    `).join('')
+    document.getElementById('admin-produk-list').innerHTML = html
+}
+
+async function saveProduk() {
+    try {
+        let variants = JSON.parse(prodVariants.value || '[]')
+        if(!prodName.value || variants.length === 0) return alert('Nama dan Varian wajib diisi')
+
+        let body = {
+            name: prodName.value,
+            category: prodCategory.value,
+            description: prodDesc.value,
+            variants: variants
+        }
+        let url = editingId? `/produk/${editingId}` : '/produk'
+        let method = editingId? 'PUT' : 'POST'
+
+        await apiFetch(url, {
+            method: method,
+            headers: {'Content-Type':'application/json', 'x-api-key': ADMIN_KEY},
+            body: JSON.stringify(body)
+        })
+        alert('Berhasil disimpan')
+        resetForm()
+        loadAdminProduk()
+    } catch(e) {
+        alert('JSON Varian salah format. Contoh: [{"name":"1B","price":5000}]')
+    }
+}
+
+function editProduk(index) { // FIX: pake index bukan JSON.stringify
+    let p = allAdminProducts[index]
+    editingId = p.id
+    prodName.value = p.name
+    prodCategory.value = p.category
+    prodDesc.value = p.description
+    prodVariants.value = JSON.stringify(p.variants, null, 2) // biar rapi
+    document.getElementById('form-title').innerText = 'Edit Produk'
+    window.scrollTo(0,0)
+}
+
+async function deleteProduk(id) {
+    if(!confirm('Yakin hapus produk ini?')) return
+    await apiFetch(`/produk/${id}`, {
+        method: 'DELETE',
+        headers: {'x-api-key': ADMIN_KEY}
+    })
+    loadAdminProduk()
+}
+
+function resetForm() {
+    editingId = null
+    prodName.value = prodCategory.value = prodDesc.value = prodVariants.value = ''
+    document.getElementById('form-title').innerText = 'Tambah Produk'
+}
+
+loadAdminProduk()
+</script>
+</body>
+</html>
