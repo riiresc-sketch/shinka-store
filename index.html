@@ -1,365 +1,532 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shinka Store</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-    body { background: #0a0a0a; color: #fff; font-family: 'Poppins', sans-serif; }
-  .glow { box-shadow: 0 0 20px rgba(168,85,247,.3) }
-  .tab-active { border-bottom: 2px solid #a855f7; color: #a855f7 }
-  .badge { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: bold }
-  .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 50 }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shinka Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ============== FONT & WARNA TEMA DARK PURPLE ============== */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Poppins:wght@400;500&display=swap');
+
+        :root {
+            --purple-dark: #4c1d95;
+            --purple-mid: #7c3aed;
+            --purple-glow: 0 0 15px rgba(124, 58, 237, 0.4);
+            --card: rgba(12, 8, 18, 0.6);
+        }
+
+        /* ============== BODY & BACKGROUND ============== */
+        body {
+            background: radial-gradient(ellipse at top, #1a0a2e 0%, #040003 60%);
+            color: #d1d5db;
+            font-family: 'Poppins', sans-serif;
+            background-attachment: fixed;
+        }
+
+        /* ============== TYPOGRAPHY ============== */
+        h1, h2,.font-bold {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+       .neon-text {
+            color: #c4b5fd;
+            text-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
+        }
+
+        /* ============== COMPONENT GLASS EFFECT ============== */
+       .glass {
+            background: var(--card);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(124, 58, 237, 0.15);
+        }
+
+        /* ============== BUTTON STYLE ============== */
+       .btn-solid {
+            background: linear-gradient(90deg, #4c1d95, #7c3aed);
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+       .btn-solid:hover {
+            box-shadow: var(--purple-glow);
+            transform: translateY(-1px);
+        }
+
+       .btn-outline {
+            background: transparent;
+            border: 1px solid var(--purple-dark);
+            color: #a78bfa;
+            transition: all 0.3s;
+        }
+       .btn-outline:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--purple-mid);
+            box-shadow: var(--purple-glow);
+            color: #c4b5fd;
+        }
+
+        /* ============== MODAL & SIDEBAR ============== */
+       .modal {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 50
+        }
+       .sidebar {
+            position: fixed; top:0; left:-280px; width:280px; height:100%;
+            background: rgba(4, 0, 3, 0.85); backdrop-filter: blur(20px);
+            z-index:60; transition:0.3s; border-right: 1px solid rgba(124, 58, 237, 0.3)
+        }
+       .sidebar.open { left:0 }
+       .overlay {
+            position: fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.85); z-index:55; display:none
+        }
+       .overlay.show { display:block }
+
+        /* ============== CART & TAB ============== */
+       .cart-badge {
+            position: absolute; top: 2px; right: 2px;
+            background: linear-gradient(135deg, #4c1d95, #7c3aed);
+            color: #fff; border-radius: 999px; font-size: 10px;
+            padding: 2px 5px; font-weight: bold;
+        }
+       .tab-active {
+            border-bottom: 2px solid #7c3aed;
+            color: #c4b5fd;
+        }
+
+        /* ============== FORM INPUT ============== */
+        input, textarea {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            color: #fff;
+        }
+        input:focus, textarea:focus {
+            outline: none; border-color: var(--purple-mid);
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+        }
+
+        /* ============== ICON & CONTACT LINK ============== */
+       .icon {
+            width: 22px; height: 22px; fill: #a78bfa;
+            margin-right: 10px; flex-shrink: 0;
+        }
+       .contact-link {
+            display: flex; align-items: center; padding: 12px;
+            border-radius: 8px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(124, 58, 237, 0.1);
+            transition: 0.3s; text-decoration: none;
+        }
+       .contact-link:hover {
+            background: rgba(124, 58, 237, 0.2);
+            border-color: var(--purple-mid);
+            box-shadow: var(--purple-glow);
+        }
+    </style>
 </head>
 <body class="p-4">
 
-<div class="max-w-6xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-6">🛒 Shinka Store</h1>
-
-    <div class="flex gap-4 border-b border-zinc-800 mb-6 overflow-x-auto">
-        <button onclick="showTab('store')" class="tab-btn tab-active pb-2">Store</button>
-        <button onclick="showTab('admin')" class="tab-btn pb-2">Admin</button>
-        <button onclick="showTab('cek')" class="tab-btn pb-2">Cek</button>
-        <button onclick="showTab('cart')" class="tab-btn pb-2">Keranjang <span id="cartCount" class="bg-purple-600 px-2 rounded-full text-xs">0</span></button>
-        <button onclick="showTab('bayar')" class="tab-btn pb-2">Bayar</button>
+    <!-- ============== SIDEBAR MENU ============== -->
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+    <div id="sidebar" class="sidebar p-4">
+        <h2 class="text-xl font-bold mb-4 neon-text">:: MENU ::</h2>
+        <button onclick="showTab('store'); toggleSidebar()" class="w-full text-left p-3 hover:bg-purple-950/30 rounded mb-1">🏠 Store</button>
+        <button onclick="showTab('amprem'); toggleSidebar()" class="w-full text-left p-3 hover:bg-purple-950/30 rounded mb-1">⚡ AM Premium</button>
+        <button onclick="showTab('cart'); toggleSidebar()" class="w-full text-left p-3 hover:bg-purple-950/30 rounded mb-1">🛒 Keranjang <span id="cartCountSidebar" class="cart-badge">0</span></button>
+        <hr class="border-purple-950 my-3">
+        <button onclick="showTab('admin'); toggleSidebar()" class="w-full text-left p-3 hover:bg-purple-950/30 rounded mb-1">⚙️ Admin Panel</button>
+        <button onclick="showTab('cek'); toggleSidebar()" class="w-full text-left p-3 hover:bg-purple-950/30 rounded mb-1">🔍 Cek Tagihan</button>
     </div>
 
-    <!-- TAB ADMIN -->
-    <div id="tab-admin" class="hidden">
-        <div class="flex gap-2 mb-4">
-            <input id="apiKey" type="password" placeholder="API Key" class="flex-1 p-3 rounded-lg bg-zinc-900 border-zinc-800">
-            <button onclick="loginAdmin()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-bold">Login</button>
+    <!-- ============== MAIN CONTAINER ============== -->
+    <div class="max-w-6xl mx-auto">
+        <!-- HEADER -->
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="toggleSidebar()" class="p-2 text-purple-300 hover:text-purple-200 text-2xl">☰</button>
+            <h1 class="text-3xl font-bold neon-text">🛒 SHINKA STORE</h1>
+            <button onclick="showTab('cart')" class="relative p-2 text-purple-300 hover:text-purple-200">🛒<span id="cartCount" class="cart-badge">0</span></button>
         </div>
-        <button onclick="showAddProdukModal()" class="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg font-bold mb-4">➕ Tambah Produk Baru</button>
-        <div id="admin-content"></div>
-    </div>
 
-    <!-- TAB STORE -->
-    <div id="tab-store">
-        <input id="search" onkeyup="renderProduk()" placeholder="🔍 Cari produk..." class="w-full p-3 rounded-lg bg-zinc-900 mb-4">
-        <div id="produk-list" class="grid md:grid-cols-3 gap-4"></div>
-    </div>
-
-    <!-- TAB CEK -->
-    <div id="tab-cek" class="hidden">
-        <h2 class="text-xl font-bold mb-2">🔍 Cek Pembayaran</h2>
-        <input id="cekOrder" placeholder="ID Order" class="w-full p-3 rounded-lg bg-zinc-900 mb-4">
-        <button onclick="cekMutasi()" class="w-full bg-purple-600 p-3 rounded-lg font-bold">CEK</button>
-        <div id="cek-hasil" class="mt-4"></div>
-    </div>
-
-    <!-- TAB CART -->
-    <div id="tab-cart" class="hidden">
-        <div id="cart-list"></div>
-        <input id="buyerName" placeholder="Nama WA" class="w-full p-2 my-2 bg-zinc-900 rounded">
-        <button onclick="checkout()" class="w-full bg-green-600 p-3 rounded-lg mt-2 font-bold">Checkout</button>
-    </div>
-
-    <!-- TAB BAYAR - CUMA ADA QRIS + EWALLET -->
-    <div id="tab-bayar" class="hidden">
-        <h2 class="text-xl font-bold mb-4">💳 Metode Pembayaran</h2>
-        <div class="bg-zinc-900 p-4 rounded-lg mb-4 text-center">
-            <p class="font-bold mb-2">SCAN QRIS CATBOOX</p>
-            <img id="qrisImg" src="" class="w-64 mx-auto rounded-lg glow mb-2">
-            <p class="text-xs text-zinc-400">Scan pake DANA/GOPAY/OVO/ShopeePay</p>
+        <!-- NAVIGATION TABS -->
+        <div class="flex gap-4 border-b border-zinc-800 mb-6 overflow-x-auto">
+            <button onclick="showTab('store')" class="tab-btn tab-active pb-2 px-2">Store</button>
+            <button onclick="showTab('amprem')" class="tab-btn pb-2 px-2">AM Premium</button>
+            <button onclick="showTab('admin')" class="tab-btn pb-2 px-2">Admin</button>
+            <button onclick="showTab('cek')" class="tab-btn pb-2 px-2">Cek</button>
+            <button onclick="showTab('cart')" class="tab-btn pb-2 px-2">Keranjang</button>
         </div>
-        <div id="payment-list" class="bg-zinc-900 p-4 rounded-lg mb-4"></div>
-        <div class="bg-zinc-900 p-4 rounded-lg">
-            <h3 class="font-bold mb-2">Konfirmasi Pembayaran</h3>
-            <input id="bayarOrderId" placeholder="ID Order dari Checkout" class="w-full p-2 mb-2 bg-zinc-800 rounded">
-            <input id="bayarBukti" type="file" accept="image/*" class="w-full p-2 mb-2 bg-zinc-800 rounded text-sm">
-            <button onclick="kirimBukti()" class="w-full bg-green-600 p-2 rounded font-bold">KIRIM BUKTI</button>
+
+        <!-- ============== TAB STORE ============== -->
+        <div id="tab-store">
+            <input id="search" onkeyup="renderProduk()" placeholder="🔍 Cari produk..." class="w-full p-3 rounded-lg glass mb-4">
+            <div id="produk-list" class="grid md:grid-cols-3 gap-4 mb-8"></div>
+
+            <!-- BAGIAN DONASI -->
+            <div class="glass p-6 rounded-lg mt-8">
+                <h2 class="text-2xl font-bold mb-4 neon-text text-center">❤️ Dukung Shinka Store</h2>
+                <p class="text-center text-zinc-400 mb-4">Bantu kami terus berkembang dengan donasi seikhlasnya</p>
+                <input id="donasiJumlah" type="number" placeholder="Mau donasi berapa? cth: 5000" class="w-full p-3 rounded-lg glass mb-3">
+                <input id="donasiNama" placeholder="Nama kamu" class="w-full p-3 rounded-lg glass mb-3">
+                <textarea id="donasiPesan" placeholder="Pesan/ucapan..." class="w-full p-3 rounded-lg glass h-20 mb-3"></textarea>
+                <button onclick="buatDonasi()" class="w-full btn-solid p-3 rounded-lg font-bold">BUAT QRIS DONASI</button>
+                <div id="donasi-qris" class="mt-4"></div>
+            </div>
+
+            <!-- FOOTER SUPPORT CS -->
+            <div class="glass p-6 rounded-lg mt-6">
+                <h3 class="text-xl font-bold mb-4 neon-text text-center">Support CS</h3>
+                <p class="text-zinc-400 mb-4 text-center">Ada kendala? Hubungi kami</p>
+                <div class="space-y-3">
+                    <!-- WHATSAPP -->
+                    <a href="https://wa.me/6283876684930" target="_blank" class="contact-link">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20.52 3.449C18.24 1.245 15.24 0.008 12.04 0C5.463 0 0.104 5.357 0.1 11.932c0 2.104.549 4.158 1.597 5.97L0 24l6.322-1.654c1.75.954 3.73 1.456 5.735 1.456h.005c6.575 0 11.935-5.357 11.939-11.932c0-3.186-1.243-6.185-3.49-8.441zM12.04 21.85h-.004c-1.795 0-3.557-.48-5.098-1.385l-.365-.216-3.75.981.999-3.65-.239-.375c-.99-1.57-1.512-3.39-1.512-5.28c.004-5.48 4.464-9.94 9.95-9.94 2.654 0 5.15 1.035 7.029 2.914 1.878 1.88 2.91 4.376 2.91 7.029c-.004 5.482-4.464 9.942-9.95 9.942z"/></svg>
+                        <div><p class="font-bold text-purple-300">WhatsApp</p><p class="text-sm text-zinc-300">+62 838-7668-4930</p></div>
+                    </a>
+                    <!-- EMAIL -->
+                    <a href="mailto:ggfahr2@gmail.com" target="_blank" class="contact-link">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 1.1-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                        <div><p class="font-bold text-purple-300">Email</p><p class="text-sm text-zinc-300">ggfahr2@gmail.com</p></div>
+                    </a>
+                    <!-- INSTAGRAM -->
+                    <a href="https://instagram.com/phri186" target="_blank" class="contact-link">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/></svg>
+                        <div><p class="font-bold text-purple-300">Instagram</p><p class="text-sm text-zinc-300">@phri186</p></div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============== TAB AM PREMIUM ============== -->
+        <div id="tab-amprem" class="hidden">
+            <h2 class="text-xl font-bold mb-4 neon-text">Alight Motion Premium</h2>
+            <input id="amEmail" type="email" placeholder="Email Alight Motion kamu" class="w-full p-3 rounded-lg glass mb-4">
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="glass p-4 rounded-lg">
+                    <h3 class="font-bold text-green-400 text-lg">🚀 FAST</h3>
+                    <p class="mb-3">Rp2000 - 1-5 Menit</p>
+                    <button onclick="buatInvoiceAM('fast', 'am')" class="w-full btn-solid p-2 rounded">BAYAR SEKARANG</button>
+                </div>
+                <div class="glass p-4 rounded-lg">
+                    <h3 class="font-bold text-yellow-400 text-lg">🐢 SLOW</h3>
+                    <p class="mb-3">Rp1000 - 1-3 Jam</p>
+                    <button onclick="buatInvoiceAM('slow', 'am')" class="w-full btn-outline p-2 rounded">BAYAR SEKARANG</button>
+                </div>
+            </div>
+            <div id="am-qris" class="mt-6"></div>
+        </div>
+
+        <!-- ============== TAB ADMIN ============== -->
+        <div id="tab-admin" class="hidden">
+            <div class="flex gap-2 mb-4">
+                <input id="apiKey" type="password" placeholder="API Key" class="flex-1 p-3 rounded-lg glass">
+                <button onclick="loginAdmin()" class="btn-outline px-6 py-2 rounded-lg font-bold">Login</button>
+            </div>
+            <button onclick="showAddProdukModal()" class="w-full btn-solid p-3 rounded-lg font-bold mb-4">➕ Tambah Produk Baru</button>
+            <button onclick="prosesAntrianAM()" class="w-full btn-outline p-3 rounded-lg font-bold mb-4">🐢 Proses Antrian AM Slow</button>
+            <div id="admin-content"></div>
+        </div>
+
+        <!-- ============== TAB CEK PEMBAYARAN ============== -->
+        <div id="tab-cek" class="hidden">
+            <h2 class="text-xl font-bold mb-2 neon-text">🔍 Cek Pembayaran</h2>
+            <input id="cekOrder" placeholder="ID Order / Invoice ID" class="w-full p-3 rounded-lg glass mb-4">
+            <button onclick="cekMutasi()" class="w-full btn-outline p-3 rounded-lg font-bold">CEK</button>
+            <div id="cek-hasil" class="mt-4"></div>
+        </div>
+
+        <!-- ============== TAB KERANJANG ============== -->
+        <div id="tab-cart" class="hidden">
+            <h2 class="text-xl font-bold mb-4 neon-text">Keranjang Belanja</h2>
+            <div id="cart-list"></div>
+            <input id="buyerName" placeholder="Nama WA" class="w-full p-2 my-2 glass rounded">
+            <input id="buyerEmail" type="email" placeholder="Email untuk kirim produk" class="w-full p-2 my-2 glass rounded">
+            <button onclick="checkoutProduk()" class="w-full btn-solid p-3 rounded-lg mt-2 font-bold">BAYAR DENGAN QRIS</button>
+            <div id="payment-qris" class="mt-4"></div>
         </div>
     </div>
-</div>
 
-<!-- MODAL EDIT -->
-<div id="modalEdit" class="modal hidden">
-    <div class="bg-zinc-900 p-6 rounded-lg w-full max-w-2xl">
-        <h2 class="text-xl font-bold mb-4">✏️ Edit Produk</h2>
-        <div id="modal-body"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="saveEdit()" class="flex-1 bg-green-600 p-2 rounded font-bold">Simpan</button>
-            <button onclick="closeModal()" class="flex-1 bg-red-600 p-2 rounded font-bold">Batal</button>
+    <!-- ============== MODAL EDIT PRODUK ============== -->
+    <div id="modalEdit" class="modal hidden">
+        <div class="glass p-6 rounded-lg w-full max-w-2xl">
+            <h2 class="text-xl font-bold mb-4 neon-text">✏️ Edit Produk</h2>
+            <div id="modal-body"></div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="saveEdit()" class="flex-1 btn-solid p-2 rounded font-bold">Simpan</button>
+                <button onclick="closeModal()" class="flex-1 bg-red-950 p-2 rounded font-bold">Batal</button>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- MODAL STOK -->
-<div id="modalStok" class="modal hidden">
-    <div class="bg-zinc-900 p-6 rounded-lg w-full max-w-lg">
-        <h2 class="text-xl font-bold mb-4">➕ Tambah Stok</h2>
-        <div id="modal-stok-body"></div>
-        <div class="flex gap-2 mt-4">
-            <button onclick="saveStok()" class="flex-1 bg-blue-600 p-2 rounded font-bold">Tambah</button>
-            <button onclick="closeModal()" class="flex-1 bg-red-600 p-2 rounded font-bold">Batal</button>
+    <!-- ============== MODAL TAMBAH STOK ============== -->
+    <div id="modalStok" class="modal hidden">
+        <div class="glass p-6 rounded-lg w-full max-w-lg">
+            <h2 class="text-xl font-bold mb-4 neon-text">➕ Tambah Stok</h2>
+            <div id="modal-stok-body"></div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="saveStok()" class="flex-1 btn-outline p-2 rounded font-bold">Tambah</button>
+                <button onclick="closeModal()" class="flex-1 bg-red-950 p-2 rounded font-bold">Batal</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-// =================== CONFIG ===================
-const API_URL = 'https://api-shinka.vercel.app/' // GANTI LINK VERCEL KAMU
-const API_KEY = 'shinkajier321'
-const IMG_BB_KEY = 'f81079add3b2cb8ca63da3c8570cac6b' // daftar di imgbb.com
+    <script>
+        // ============== KONFIGURASI GLOBAL ==============
+        const API_URL = 'https://api-shinka.vercel.app' // GANTI INI
+        const API_KEY = 'shinkajier321'
 
-const PAYMENT = {
-    qris: 'https://files.catbox.moe/ztndoi.png', // LINK QR CATBOOX
-    ewallet: [
-        { nama: 'DANA', no: '083876684930' },
-        { nama: 'GOPAY', no: '083876684930' },
-        { nama: 'OVO', no: '083876684930' }
-    ]
-}
-// ==============================================
+        // ============== VARIABLE GLOBAL ==============
+        let allProduk = []
+        let cart = []
+        let editingProduct = null
+        let stokTarget = {}
+        let intervalAM = null
+        let invoiceAM = null
+        let currentOrder = null
+        let currentDonasi = null
 
-let allProduk = []
-let cart = []
-let editingProduct = null
-let stokTarget = {}
+        // ============== INIT LOAD ==============
+        loadProduk()
 
-// SET QR DAN PAYMENT SAAT LOAD - UDAH HAPUS BANK
-document.getElementById('qrisImg').src = PAYMENT.qris
-document.getElementById('payment-list').innerHTML =
-    PAYMENT.ewallet.map(e => `<p>${e.nama}: <b>${e.no}</b></p>`).join('')
-
-// FUNGSI GANTI TAB
-function showTab(tab) {
-    document.querySelectorAll('[id^=tab-]').forEach(e => e.classList.add('hidden'))
-    document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('tab-active'))
-    document.getElementById('tab-' + tab).classList.remove('hidden')
-    event.target.classList.add('tab-active')
-    if (tab === 'cart') renderCart()
-}
-
-// BADGE STATUS
-function getStatusBadge(status) {
-    if (status === 'PAID') return `<span class="badge bg-green-600">PAID</span>`
-    if (status === 'UNPAID') return `<span class="badge bg-red-600">UNPAID</span>`
-    return `<span class="badge bg-zinc-600">${status}</span>`
-}
-
-// LOAD PRODUK DARI API
-async function loadProduk() {
-    let res = await fetch(API_URL + '/produk')
-    let json = await res.json()
-    allProduk = json.data || []
-    renderProduk()
-}
-
-// RENDER PRODUK KE STORE
-function renderProduk() {
-    let search = document.getElementById('search').value.toLowerCase()
-    let list = allProduk.filter(p => p.name.toLowerCase().includes(search))
-    let html = ''
-    for (let p of list) {
-        html += `<div class="bg-zinc-900 p-4 rounded-lg border-zinc-800">`
-        html += `<p class="font-bold text-lg">${p.name}</p>`
-        html += `<p class="text-sm text-zinc-400 mb-2">${p.category}</p>`
-        for (let i = 0; i < p.variants.length; i++) {
-            let v = p.variants[i]
-            html += `<div class="flex justify-between items-center mb-2">`
-            html += `<span>${v.name} - Rp${v.price.toLocaleString()}</span>`
-            html += `<button onclick="addCart('${p.id}',${i})" class="bg-purple-600 px-3 py-1 rounded text-sm">+</button>`
-            html += `</div>`
+        // ============== FUNGSI UI DASAR ==============
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show')
         }
-        html += `</div>`
-    }
-    document.getElementById('produk-list').innerHTML = html
-}
-
-// LOGIN ADMIN
-async function loginAdmin() {
-    let key = document.getElementById('apiKey').value
-    if (key!== API_KEY) return alert('API Key salah')
-    let res = await fetch(API_URL + '/orders', { headers: { 'x-api-key': key } })
-    let json = await res.json()
-
-    let html = `<h2 class="font-bold mb-3">Daftar Produk</h2>`
-    for (let p of allProduk) {
-        html += `<div class="bg-zinc-900 p-4 rounded-lg mb-3 border-zinc-800">`
-        html += `<div class="flex justify-between">`
-        html += `<p class="font-bold">${p.name}</p>`
-        html += `<div class="flex gap-2">`
-        html += `<button onclick="openEditModal('${p.id}')" class="bg-yellow-600 px-3 py-1 rounded text-sm font-bold">✏️ Edit</button>`
-        html += `<button onclick="openStokModal('${p.id}')" class="bg-blue-600 px-3 py-1 rounded text-sm font-bold">➕ Stok</button>`
-        html += `</div></div>`
-        for (let v of p.variants) {
-            let stok = p.type === 'dynamic'? v.stocks.length : v.stock
-            html += `<p class="text-sm">${v.name} - Rp${v.price.toLocaleString()} | Stok: ${stok}</p>`
+        function showTab(tab) {
+            document.querySelectorAll('[id^=tab-]').forEach(e => { e.classList.add('hidden') });
+            document.querySelectorAll('.tab-btn').forEach(e => { e.classList.remove('tab-active') });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            event.target.classList.add('tab-active');
+            if (tab === 'cart') { renderCart() };
+            if(intervalAM) { clearInterval(intervalAM) }
         }
-        html += `</div>`
-    }
-
-    html += `<h2 class="font-bold mt-6 mb-3">Daftar Order</h2>`
-    for (let o of json.data) {
-        html += `<div class="bg-zinc-900 p-3 rounded mb-2">`
-        html += `${o.orderId} ${getStatusBadge(o.status)}<br>`
-        html += `Rp${o.total.toLocaleString()}<br>`
-        if (o.paymentProof) html += `<a href="${o.paymentProof}" target="_blank" class="text-blue-400">Lihat Bukti</a>`
-        html += `</div>`
-    }
-    document.getElementById('admin-content').innerHTML = html
-}
-
-// MODAL EDIT PRODUK
-function openEditModal(pid) {
-    editingProduct = allProduk.find(p => p.id === pid)
-    document.getElementById('modal-body').innerHTML = `
-        <input id="editName" value="${editingProduct.name}" class="w-full p-2 mb-2 bg-zinc-800 rounded">
-        <input id="editCategory" value="${editingProduct.category}" class="w-full p-2 mb-2 bg-zinc-800 rounded">
-        <textarea id="editVariants" class="w-full h-40 p-2 bg-zinc-800 rounded">${JSON.stringify(editingProduct.variants, null, 2)}</textarea>
-    `
-    document.getElementById('modalEdit').classList.remove('hidden')
-}
-
-// SIMPAN EDIT
-async function saveEdit() {
-    let key = document.getElementById('apiKey').value
-    let data = {
-        id: editingProduct.id,
-        name: document.getElementById('editName').value,
-        category: document.getElementById('editCategory').value,
-        type: editingProduct.type,
-        variants: JSON.parse(document.getElementById('editVariants').value)
-    }
-    await fetch(API_URL + '/addproduk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-api-key': key },
-        body: JSON.stringify(data)
-    })
-    alert('Produk diupdate')
-    closeModal()
-    loadProduk()
-    loginAdmin()
-}
-
-// MODAL TAMBAH STOK
-function openStokModal(pid) {
-    let p = allProduk.find(x => x.id === pid)
-    stokTarget = { pid, p }
-    let html = ''
-    for (let i = 0; i < p.variants.length; i++) {
-        let v = p.variants[i]
-        let stok = p.type === 'dynamic'? v.stocks.length : v.stock
-        html += `<div class="mb-3">`
-        html += `<p class="font-bold">${v.name}</p>`
-        html += `<p class="text-xs">Stok: ${stok}</p>`
-        if (p.type === 'dynamic') {
-            html += `<textarea id="stok-input-${i}" placeholder="Paste kode, pisah enter" class="w-full h-20 p-2 bg-zinc-800 rounded mt-1"></textarea>`
-        } else {
-            html += `<input id="stok-input-${i}" type="number" placeholder="Jumlah stok" class="w-full p-2 bg-zinc-800 rounded mt-1">`
+        function closeModal() {
+            document.getElementById('modalEdit').classList.add('hidden');
+            document.getElementById('modalStok').classList.add('hidden')
         }
-        html += `</div>`
-    }
-    document.getElementById('modal-stok-body').innerHTML = html
-    document.getElementById('modalStok').classList.remove('hidden')
-}
 
-// SIMPAN STOK
-async function saveStok() {
-    let key = document.getElementById('apiKey').value
-    for (let i = 0; i < stokTarget.p.variants.length; i++) {
-        let val = document.getElementById(`stok-input-${i}`).value
-        if (!val) continue
-        await fetch(API_URL + '/editstok', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-api-key': key },
-            body: JSON.stringify({ productId: stokTarget.pid, variantIndex: i, tambahStok: val })
-        })
-    }
-    alert('Stok ditambah')
-    closeModal()
-    loadProduk()
-    loginAdmin()
-}
+        // ============== FUNGSI DONASI ==============
+        async function buatDonasi() {
+            let jumlah = document.getElementById('donasiJumlah').value
+            let nama = document.getElementById('donasiNama').value
+            let pesan = document.getElementById('donasiPesan').value
+            if(!jumlah ||!nama) return alert('Isi jumlah & nama dulu')
+            let res = await fetch(API_URL + '/am/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: 'donasi@shinka.com', mode: 'fast', harga: Number(jumlah), nama: nama, pesan: pesan, type: 'donasi' }) })
+            let json = await res.json(); if(!json.success) return alert(json.error)
+            currentDonasi = json.invoice_id
+            document.getElementById('donasi-qris').innerHTML = `<div class="glass p-4 rounded-lg text-center"><h3 class="font-bold mb-2 neon-text">Scan QRIS Donasi Rp${Number(jumlah).toLocaleString()}</h3><img src="${json.qris_image}" class="w-64 mx-auto rounded-lg mb-2"><p>ID: ${json.invoice_id}</p><p id="donasi-status" class="mt-2 text-yellow-400">Menunggu Pembayaran...</p></div>`
+            intervalAM = setInterval(cekStatusDonasi, 3000)
+        }
+        async function cekStatusDonasi() {
+            let res = await fetch(API_URL + '/am/check/' + currentDonasi); let json = await res.json()
+            if(json.sairi.status === 'paid') { clearInterval(intervalAM); document.getElementById('donasi-status').innerHTML = '✅ TERIMAKASIH SUDAH DONASI!'; document.getElementById('donasi-status').className = 'mt-2 text-green-400' }
+        }
 
-// TUTUP MODAL
-function closeModal() {
-    document.getElementById('modalEdit').classList.add('hidden')
-    document.getElementById('modalStok').classList.add('hidden')
-}
+        // ============== FUNGSI CHECKOUT PRODUK ==============
+        async function checkoutProduk() {
+            let name = document.getElementById('buyerName').value;
+            let email = document.getElementById('buyerEmail').value;
+            if (!name ||!email || cart.length === 0) return alert('Isi nama, email & keranjang');
+            let total = cart.reduce((sum, item) => sum + item.price, 0);
+            let res = await fetch(API_URL + '/am/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: email, mode: 'fast', harga: total, produk: cart, nama: name }) });
+            let json = await res.json();
+            if(!json.success) return alert(json.error);
+            currentOrder = json.invoice_id;
+            document.getElementById('payment-qris').innerHTML = `<div class="glass p-4 rounded-lg text-center"><h3 class="font-bold mb-2 neon-text">Scan QRIS Untuk Bayar Rp${total.toLocaleString()}</h3><img src="${json.qris_image}" class="w-64 mx-auto rounded-lg mb-2"><p>Total: Rp${json.total}</p><p id="order-status" class="mt-2 text-yellow-400">Menunggu Pembayaran...</p></div>`;
+            intervalAM = setInterval(cekStatusOrder, 3000);
+            cart = [];
+            document.getElementById('cartCount').innerText = 0;
+            document.getElementById('cartCountSidebar').innerText = 0
+        }
+        async function cekStatusOrder() {
+            let res = await fetch(API_URL + '/am/check/' + currentOrder);
+            let json = await res.json();
+            if(json.sairi.status === 'paid') {
+                clearInterval(intervalAM);
+                document.getElementById('order-status').innerHTML = '✅ LUNAS! Produk akan dikirim ke email';
+                document.getElementById('order-status').className = 'mt-2 text-green-400';
+                await fetch(API_URL + '/order/paid', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({invoice_id: currentOrder}) })
+            }
+        }
 
-// MODAL TAMBAH PRODUK BARU
-function showAddProdukModal() {
-    editingProduct = null
-    document.getElementById('modal-body').innerHTML = `
-        <input id="editName" placeholder="Nama Produk" class="w-full p-2 mb-2 bg-zinc-800 rounded">
-        <input id="editCategory" placeholder="Kategori" class="w-full p-2 mb-2 bg-zinc-800 rounded">
-        <textarea id="editVariants" placeholder='[{"name":"10k","price":10000,"stock":100}]' class="w-full h-40 p-2 bg-zinc-800 rounded"></textarea>
-    `
-    document.getElementById('modalEdit').classList.remove('hidden')
-}
+        // ============== FUNGSI AM PREMIUM ==============
+        async function buatInvoiceAM(mode, type) {
+            const email = document.getElementById('amEmail').value;
+            if(!email) return alert('Isi email dulu');
+            let res = await fetch(API_URL + '/am/create', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({email, mode, type: type}) });
+            let json = await res.json();
+            if(!json.success) return alert(json.error);
+            invoiceAM = json.invoice_id;
+            document.getElementById('am-qris').innerHTML = `<div class="glass p-4 rounded-lg text-center"><h3 class="font-bold mb-2 neon-text">Scan QRIS ${mode.toUpperCase()} Rp${json.harga}</h3><img src="${json.qris_image}" class="w-64 mx-auto rounded-lg mb-2"><p>Total: Rp${json.total}</p><p id="am-status" class="mt-2 text-yellow-400">Menunggu Pembayaran...</p></div>`;
+            intervalAM = setInterval(cekStatusAM, 3000)
+        }
+        async function cekStatusAM() {
+            let res = await fetch(API_URL + '/am/check/' + invoiceAM);
+            let json = await res.json();
+            if(json.sairi.status === 'paid') {
+                clearInterval(intervalAM);
+                if(json.db_status === 'done') {
+                    document.getElementById('am-status').innerHTML = '✅ LUNAS! Magiclink sudah dikirim ke email';
+                    document.getElementById('am-status').className = 'mt-2 text-green-400'
+                }
+                if(json.db_status === 'queue') {
+                    document.getElementById('am-status').innerHTML = '✅ LUNAS! Masuk antrian 1-3 jam';
+                    document.getElementById('am-status').className = 'mt-2 text-yellow-400'
+                }
+            }
+        }
+        async function prosesAntrianAM() {
+            let key = document.getElementById('apiKey').value;
+            let res = await fetch(API_URL + '/am/process', {method:'POST', headers:{'x-api-key':key}});
+            let json = await res.json();
+            alert(json.message)
+        }
 
-// TAMBAH KE KERANJANG
-function addCart(pid, vid) {
-    let p = allProduk.find(x => x.id === pid)
-    let v = p.variants[vid]
-    cart.push({ pid, vid, pname: p.name, name: v.name, price: v.price, qty: 1 })
-    document.getElementById('cartCount').innerText = cart.length
-    alert('Ditambah ke keranjang')
-}
+        // ============== FUNGSI PRODUK & CART ==============
+        async function loadProduk() {
+            let res = await fetch(API_URL + '/produk');
+            let json = await res.json();
+            allProduk = json.data || [];
+            renderProduk()
+        }
+        function renderProduk() {
+            let search = document.getElementById('search').value.toLowerCase();
+            let list = allProduk.filter(p => p.name.toLowerCase().includes(search));
+            let html = '';
+            for (let p of list) {
+                html += `<div class="glass p-4 rounded-lg">`;
+                html += `<p class="font-bold text-lg neon-text">${p.name}</p>`;
+                html += `<p class="text-sm text-zinc-500 mb-3">${p.category}</p>`;
+                for (let i = 0; i < p.variants.length; i++) {
+                    let v = p.variants[i];
+                    html += `<div class="flex justify-between items-center mb-2 p-2 bg-black/40 rounded">`;
+                    html += `<span>${v.name} - Rp${v.price.toLocaleString()}</span>`;
+                    html += `<button onclick="addCart('${p.id}',${i})" class="btn-outline px-3 py-1 rounded text-sm">+</button>`;
+                    html += `</div>`
+                }
+                html += `</div>`
+            }
+            document.getElementById('produk-list').innerHTML = html
+        }
+        function addCart(pid, vid) {
+            let p = allProduk.find(x => x.id === pid);
+            let v = p.variants[vid];
+            cart.push({ pid, vid, pname: p.name, name: v.name, price: v.price, qty: 1 });
+            document.getElementById('cartCount').innerText = cart.length;
+            document.getElementById('cartCountSidebar').innerText = cart.length;
+            alert('Ditambah ke keranjang')
+        }
+        function renderCart() {
+            let total = 0;
+            let html = '';
+            for (let c of cart) {
+                total += c.price;
+                html += `<div class="glass p-3 rounded mb-2 flex justify-between"><div><p class="font-bold">${c.pname}</p><p class="text-sm text-zinc-500">${c.name}</p></div><p class="font-bold neon-text">Rp${c.price.toLocaleString()}</p></div>`
+            }
+            if(cart.length === 0) {
+                html = '<p class="text-center text-zinc-600">Keranjang kosong</p>'
+            } else {
+                html += `<p class="text-right font-bold text-lg mt-4 neon-text">TOTAL: Rp${total.toLocaleString()}</p>`
+            }
+            document.getElementById('cart-list').innerHTML = html
+        }
 
-// RENDER KERANJANG
-function renderCart() {
-    let html = ''
-    for (let c of cart) {
-        html += `<div class="bg-zinc-900 p-2 rounded mb-2 flex justify-between">${c.pname} - ${c.name} Rp${c.price.toLocaleString()}</div>`
-    }
-    document.getElementById('cart-list').innerHTML = html
-}
+        // ============== FUNGSI ADMIN ==============
+        async function loginAdmin() {
+            let key = document.getElementById('apiKey').value;
+            if (key!== API_KEY) return alert('API Key salah');
+            let res = await fetch(API_URL + '/orders', { headers: { 'x-api-key': key } });
+            let json = await res.json();
+            let html = `<h2 class="font-bold mb-3 neon-text">Daftar Produk</h2>`;
+            for (let p of allProduk) {
+                html += `<div class="glass p-4 rounded-lg mb-3">`;
+                html += `<div class="flex justify-between">`;
+                html += `<p class="font-bold">${p.name}</p>`;
+                html += `<div class="flex gap-2">`;
+                html += `<button onclick="openEditModal('${p.id}')" class="bg-yellow-950 px-3 py-1 rounded text-sm font-bold">✏️ Edit</button>`;
+                html += `<button onclick="openStokModal('${p.id}')" class="bg-blue-950 px-3 py-1 rounded text-sm font-bold">➕ Stok</button>`;
+                html += `</div></div>`;
+                for (let v of p.variants) {
+                    html += `<p class="text-sm">${v.name} - Rp${v.price.toLocaleString()} | Stok: ${v.stock}</p>`
+                }
+                html += `</div>`
+            }
+            html += `<h2 class="font-bold mt-6 mb-3 neon-text">Daftar Order</h2>`;
+            for (let o of json.data) {
+                html += `<div class="glass p-3 rounded mb-2">`;
+                html += `${o.id} <br>Status: ${o.status}`;
+                html += `</div>`
+            }
+            document.getElementById('admin-content').innerHTML = html
+        }
+        function openEditModal(pid) {
+            editingProduct = allProduk.find(p => p.id === pid);
+            document.getElementById('modal-body').innerHTML = `<input id="editName" value="${editingProduct.name}" class="w-full p-2 mb-2 glass rounded"><input id="editCategory" value="${editingProduct.category}" class="w-full p-2 mb-2 glass rounded"><textarea id="editVariants" class="w-full h-40 p-2 glass rounded">${JSON.stringify(editingProduct.variants, null, 2)}</textarea>`;
+            document.getElementById('modalEdit').classList.remove('hidden')
+        }
+        async function saveEdit() {
+            let key = document.getElementById('apiKey').value;
+            let data = { id: editingProduct.id, name: document.getElementById('editName').value, category: document.getElementById('editCategory').value, variants: JSON.parse(document.getElementById('editVariants').value) };
+            await fetch(API_URL + '/addproduk', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': key }, body: JSON.stringify(data) });
+            alert('Produk diupdate');
+            closeModal();
+            loadProduk();
+            loginAdmin()
+        }
+        function openStokModal(pid) {
+            let p = allProduk.find(x => x.id === pid);
+            stokTarget = { pid, p };
+            let html = '';
+            for (let i = 0; i < p.variants.length; i++) {
+                let v = p.variants[i];
+                html += `<div class="mb-3">`;
+                html += `<p class="font-bold">${v.name}</p>`;
+                html += `<p class="text-xs">Stok: ${v.stock}</p>`;
+                html += `<input id="stok-input-${i}" type="number" placeholder="Jumlah stok" class="w-full p-2 glass rounded mt-1">`;
+                html += `</div>`
+            }
+            document.getElementById('modal-stok-body').innerHTML = html;
+            document.getElementById('modalStok').classList.remove('hidden')
+        }
+        async function saveStok() {
+            let key = document.getElementById('apiKey').value;
+            for (let i = 0; i < stokTarget.p.variants.length; i++) {
+                let val = document.getElementById(`stok-input-${i}`).value;
+                if (!val) continue;
+                await fetch(API_URL + '/editstok', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': key }, body: JSON.stringify({ id: stokTarget.pid, stok: Number(val) }) })
+            }
+            alert('Stok ditambah');
+            closeModal();
+            loadProduk();
+            loginAdmin()
+        }
 
-// CHECKOUT
-async function checkout() {
-    let name = document.getElementById('buyerName').value
-    if (!name || cart.length === 0) return alert('Isi nama & keranjang')
-    let res = await fetch(API_URL + '/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart, buyer: name })
-    })
-    let json = await res.json()
-    alert(`Order Dibuat! ID: ${json.orderId}\nTotal: Rp${json.total.toLocaleString()}\nSilahkan ke tab Bayar`)
-    cart = []
-    document.getElementById('cartCount').innerText = 0
-    renderCart()
-}
+        // ============== FUNGSI TAMBAH PRODUK BARU ==============
+        function showAddProdukModal() {
+            editingProduct = null;
+            document.getElementById('modal-body').innerHTML = `
+                <input id="editName" placeholder="Nama Produk" class="w-full p-2 mb-2 glass rounded">
+                <input id="editCategory" placeholder="Kategori" class="w-full p-2 mb-2 glass rounded">
+                <textarea id="editVariants" placeholder='[{"name":"10k","price":10000,"stock":100}]' class="w-full h-40 p-2 glass rounded"></textarea>
+            `;
+            document.getElementById('modalEdit').classList.remove('hidden')
+        }
 
-// CEK MUTASI
-async function cekMutasi() {
-    let id = document.getElementById('cekOrder').value
-    let res = await fetch(API_URL + '/cek/' + id)
-    let json = await res.json()
-    if (json.success) {
-        document.getElementById('cek-hasil').innerHTML = `Status: ${getStatusBadge(json.data.status)}<br>Total: Rp${json.data.total.toLocaleString()}`
-    } else {
-        document.getElementById('cek-hasil').innerHTML = 'Order tidak ditemukan'
-    }
-}
+        // ============== FUNGSI CEK MUTASI ==============
+        async function cekMutasi() {
+            let id = document.getElementById('cekOrder').value;
+            if(!id) return alert('Isi ID Order dulu')
+            let res = await fetch(API_URL + '/am/check/' + id);
+            let json = await res.json();
+            if (json.sairi.status === 'paid') {
+                document.getElementById('cek-hasil').innerHTML = `<p class="text-green-400 font-bold">✅ LUNAS</p><p>ID: ${id}</p>`
+            } else {
+                document.getElementById('cek-hasil').innerHTML = `<p class="text-yellow-400 font-bold">⏳ BELUM BAYAR</p><p>ID: ${id}</p>`
+            }
+        }
 
-// KIRIM BUKTI
-async function kirimBukti() {
-    let orderId = document.getElementById('bayarOrderId').value
-    let file = document.getElementById('bayarBukti').files[0]
-    if (!orderId ||!file) return alert('Isi ID Order dan Upload Bukti')
-
-    let form = new FormData()
-    form.append('image', file)
-    let upload = await fetch('https://api.imgbb.com/1/upload?key=' + IMG_BB_KEY, { method: 'POST', body: form })
-    let json = await upload.json()
-
-    await fetch(API_URL + '/bayar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, buktiUrl: json.data.url })
-    })
-    alert('Bukti terkirim! Menunggu admin konfirmasi')
-}
-
-loadProduk()
-</script>
+        // ============== END SCRIPT ==============
+    </script>
 </body>
 </html>
