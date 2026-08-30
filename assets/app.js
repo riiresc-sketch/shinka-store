@@ -1,4 +1,4 @@
-const API_URL = 'https://api-shinka.vercel.app' // GANTI KE API KAMU
+const API_URL = 'https://api-shinka.vercel.app/' // GANTI KE API KAMU
 const API_KEY = 'shinkajier321'
 
 function toggleTheme() {
